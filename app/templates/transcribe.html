@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="transcript-container">
+  	<p><span id="transcript"></span>&#32;<span id="interim-transcript"></span></p>
+</div>
+<div class="controls">
+	<select id="dialect-chooser"></select>
+	<div class="ctrl-btn">
+		<span id="off-button" class="fa-stack fa-lg fa-2x">
+		  	<i class="fa fa-circle fa-stack-2x light-icon pulse"></i>
+		  	<i class="fas fa-microphone-alt fa-stack-1x fa-inverse light-icon"></i>
+		</span>
+	</div>
+	<div class="ctrl-btn display-none" id="on-button-parent">
+		<span id="on-button" class="fa-stack fa-lg fa-2x">
+			<i class="fa fa-circle fa-stack-2x light-icon"></i>
+			<i class="fas fa-microphone-alt-slash fa-stack-1x fa-inverse light-icon"></i>
+		</span>
+	</div>
+	<p id="mic-status">Mic on</p>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="static/js/transcribe.js"></script>
+{% endblock %}
