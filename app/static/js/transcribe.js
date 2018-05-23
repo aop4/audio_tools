@@ -115,6 +115,7 @@ $(document).on('ready', function() {
 	var continuityTimeout;
 	var pauseTimeout;
 	var micTimeout = setMicTimeout();
+	var prevResult = '';
 
 	ear.onresult = function(e) {
 		clearTimeout(continuityTimeout);
@@ -124,16 +125,27 @@ $(document).on('ready', function() {
 		var interimTranscript = '';
 		var index = -1;
 		for (index = e.resultIndex; index < e.results.length; index++) {
-			var result = e.results[index][0].transcript;
-			//If this is the first word in the result set, capitalize it
+			var result = e.results[index];
+			var text = result[0].transcript;
+			//If this is the first item in the result set, capitalize it
 			if (index == e.resultIndex) {
-				result = capFirstLetter(result);
+				text = capFirstLetter(text);
 			}
-			if (e.results[index].isFinal) {
-				transcript += result;
+			//on Android mobile, interim results are marked as final.
+			//It's a bug in the API. But their confidence value is 0,
+			//so we can catch final results by their confidence value
+			if (result.isFinal && result[0].confidence > 0) {
+				//handle bug on Android phones where the same transcript
+				//can be returned multiple times
+				if (text !== prevResult) {
+				        transcript += text;
+				        prevResult = text;
+				}
 			}
+			//if the result is not marked as final or has a 0 confidence
+			//value (i.e., is an interim result on Android devices)
 			else {
-				interimTranscript += result;
+				interimTranscript += text;
 			}
 		}
 		if (interimTranscript) {
@@ -187,6 +199,7 @@ function setupEar(ear) {
 	ear.continuous = true;
 	//get non-finalized (intermediate) results
 	ear.interimResults = true;
+	ear.maxAlternatives = 1;
 	ear.ignoreNextFinalResult = false; //I'm adding this property
 	//set initial language for interpretation
 	ear.lang = 'en-US';
@@ -196,7 +209,8 @@ function setupEar(ear) {
 
 function checkBrowser() {
 	if (! window.webkitSpeechRecognition) {
-		alert('Please use an updated version of Google Chrome or Chromium.');
+		alert("Please use an updated version of Google Chrome or Chromium. The version for iPhones/iPads"+
+			" unfortunately doesn't have the needed software installed.");
 		throw new Error('Browser is incompatible with Web Speech API. You must use Chrome/Chromium.');
 	}
 }
