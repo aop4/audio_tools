@@ -1,4 +1,19 @@
-var languages = {
+/*
+To give credit where it may be due, the basic idea for this interface was
+derived from here: https://www.google.com/intl/en/chrome/demos/speech.html
+However, none of the code is copied verbatim, and various bugs produced by
+that code are fixed here. Unlike the demo, this version will work properly
+on an Android device, allow the user to capture audio for pretty much 
+unlimited amounts of time (i.e., stop when they want to instead of at arbitrary
+times), not stall when an interim speech recognition result can't be finalized,
+and indicate where a new utterance occurred with linebreaks, among other
+improvements.
+Thanks to the folks who made the Web Speech API, which makes it possible to
+offer this service for free.
+*/
+
+
+var SPEECH_API_LANGUAGES = {
 	'Afrikaans':                'af-ZA',
 	'አማርኛ':                    'am-ET',
 	'Azərbaycanca':             'az-AZ',
@@ -100,26 +115,33 @@ var languages = {
 	'ภาษาไทย':         'th-TH'
 };
 
-var MICROPHONE_MAX_SESSION_LENGTH = 1800000; //30 minutes in msec
+var MICROPHONE_MAX_SESSION_LENGTH = 1800000; //30 minutes in msec. Represents
+	//the maximum amount of time a session will continue w/o user intervention
 var listeningForSpeech = true;
 
 $(document).on('ready', function() {
+	//populate the languages dropdown
 	var dropdown = $('#dialect-chooser');
 	setUpLangDropdown(dropdown);
+	//check if the browser is compatible, and alert user if it isn't
 	checkBrowser();
 	var ear = new webkitSpeechRecognition();
 	setupEar(ear);
 	dropdown.on('change', function() {
 		updateDialect(ear);
 	});
-	var continuityTimeout;
-	var pauseTimeout;
-	var micTimeout = setMicTimeout();
-	var prevResult = '';
+	var continuityTimeout; // restarts the speech recognition tool periodically,
+	// making longer vocalizations be transcribed more fully
+	var pauseTimeout; // after the user pauses for a couple seconds and no final results are found,
+		// prevents the API from stalling by making the last result appear to be final
+	var micTimeout = setMicTimeout(); // shuts off the mic after a long time (~30 min)
+	var prevResult = ''; // the text of the previous speech transcript
 
 	ear.onresult = function(e) {
 		clearTimeout(continuityTimeout);
 		clearTimeout(pauseTimeout);
+		//I'm not entirely sure why this helps, but it seems to make the API
+		//transcribe long, uninterrupted speech more reliably
 		continuityTimeout = setTimeout(restart, 10000, ear, false);
 		var transcript = '';
 		var interimTranscript = '';
@@ -133,9 +155,9 @@ $(document).on('ready', function() {
 			}
 			//on Android mobile, interim results are marked as final.
 			//It's a bug in the API. But their confidence value is 0,
-			//so we can catch final results by their confidence value
+			//so we can catch final results, whose confidence value > 0
 			if (result.isFinal && result[0].confidence > 0) {
-				//handle bug on Android phones where the same transcript
+				//handle other bug on Android phones where the same transcript
 				//can be returned multiple times
 				if (text !== prevResult) {
 				        transcript += text;
@@ -150,12 +172,12 @@ $(document).on('ready', function() {
 		}
 		if (interimTranscript) {
 			//sometimes interim transcripts get "stuck" in an
-			//interim state indefinitely and are later erased
-			//by unrelated final transcripts. The below causes them to
+			//interim state indefinitely. The below causes them to
 			//be preserved as final after a couple seconds of silence.
 			//Keep in mind restart() is not called until *after*
 			//those 2 seconds of silence, so first the below code is
-			//executed
+			//executed. The boolean parameter causes the next final result
+			//to be ignored, because it's derived from this vocalization.
 			pauseTimeout = setTimeout(restart, 2000, ear, true);
 		}
 		updateTranscripts(interimTranscript, transcript, ear);
@@ -169,6 +191,7 @@ $(document).on('ready', function() {
 	unless the user has hit the off button or MICROPHONE_MAX_SESSION_LENGTH
 	milliseconds have passed.*/
 	ear.onend = function(e) {
+		console.log("end");
 		ear.stop(); //if stop() isn't called, start() throws an error
 		if (listeningForSpeech) {
 			ear.start(); //if start() isn't called, the API will stop running
@@ -194,6 +217,7 @@ $(document).on('ready', function() {
 	});
 });
 
+/*Configure the speech recognition object.*/
 function setupEar(ear) {
 	//listen continuously (not just for brief commands)
 	ear.continuous = true;
@@ -207,6 +231,11 @@ function setupEar(ear) {
 	ear.start();
 }
 
+/* Only Chrome fully supports the Web Speech API. Alert the user if their
+browser is not equipped with the right tool. This API doesn't seem to work 
+on Firefox (at least on Ubuntu), even with a SpeechRecognition object as 
+opposed to a webkitSpeechRecognition object, so Firefox will not be sufficient either.
+*/
 function checkBrowser() {
 	if (! window.webkitSpeechRecognition) {
 		alert("Please use an updated version of Google Chrome or Chromium. The version for iPhones/iPads"+
@@ -230,19 +259,29 @@ function scrollDownIfNeeded(obj) {
 	obj.scrollTop = obj.scrollHeight;
 }
 
+/* Restarts the speech recognition tool, which then picks up where it
+left off. There are various bugs and time limits in the API, making this 
+necessary sometimes. The interim transcript is stored and displayed as a
+final transcript to maintain continuity in what the user is seeing. */
 function restart(ear, ignoreNextFinalResult) {
+	console.log(ignoreNextFinalResult);
+	//store the interim transcript as a final transcript (i.e., freeze it) if it exists
 	updateTranscripts('', $('#interim-transcript').text(), ear);
+	//if the API is stalled on an interim result, the next final result
+	//will just be that interim result
 	ear.ignoreNextFinalResult = ignoreNextFinalResult;
-	ear.stop();
+	ear.stop(); //triggers ear.onend, so ear.start() is implicitly called
 }
 
+/* Add languages to the language dropdown and set the default language. */
 function setUpLangDropdown(dropdown) {
-	for (var key in languages) {
-		dropdown.append($("<option />").val(languages[key]).text(key));
+	for (var key in SPEECH_API_LANGUAGES) {
+		dropdown.append($("<option />").val(SPEECH_API_LANGUAGES[key]).text(key));
 	}
+	//set the initial language to US English
 	dropdown.val('en-US');
 }
-/*Set the ear's dialect to be the same as the value in the language dropdown.*/
+/* Set the ear's dialect to be the same as the value in the language dropdown. */
 function updateDialect(ear) {
 	var new_dialect = $("#dialect-chooser").val();
 	ear.lang = new_dialect;
@@ -256,21 +295,22 @@ function updateTranscripts(interimTranscript, transcript, ear) {
 		return;
 	}
 	var prevTranscript = $('#transcript').html();
-	var linebreak = transcript ? '<br>' : '';
 	//set/clear the interim transcript
 	$('#interim-transcript').text(interimTranscript);
 	//update the final transcript if applicable
+	var linebreak = transcript ? '<br>' : '';
 	if (transcript) {
 		$('#transcript').html(prevTranscript + capFirstLetter(transcript) + linebreak);
 	}
 	scrollDownIfNeeded($('.transcript-container')[0]);
 }
 
-/*After a certain amount of time when the mic is on, stop taking input.
+/* Returns a timeout that causes the page to stop taking input after
+a certain amount of time with the mic on.
 This is primarily for "privacy" reasons. I'm not doing anything with
 the audio, but someone might accidentally leave this running and be a
 little weirded out if it captured a day's worth of audio. Also, that
-would be wasteful.*/
+would be wasteful. */
 function setMicTimeout() {
 	return setTimeout(function() {
 		if (listeningForSpeech) {
