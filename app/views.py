@@ -10,3 +10,8 @@ def index():
 	secure_response(resp)
 	return resp
 
+@app.route('/about')
+def about():
+	resp = make_response(render_template('about.html'))
+	secure_response(resp)
+	return resp

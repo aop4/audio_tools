@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="about-container">
+  <div class="text-center">
+    <p class="about-head">This app uses Google's voice recognition technology to transcribe speech in real time. Here's what sets it apart:</p>
+  </div>
+  <ul class="about-list text-center">
+    <li class="list-group-item">
+      <span class="fa-stack fa-lg fa-2x">
+        <i class="fas fa-money-bill-wave fa-stack-1x pink-icon"></i>
+        <i class="fas fa-ban fa-stack-2x no-money"></i>
+      </span><br>It's totally free, no strings attached.
+    </li>
+    <hr>
+    <li class="list-group-item"><i class="fas fa-hourglass-start fa-4x blue-icon"></i><br>It's designed to stay at work for as long as you need it to.</li>
+    <hr>
+    <li class="list-group-item"><i class="far fa-comments fa-4x green-icon"></i><br>It's designed specifically to help the hard of hearing understand what's going on in a conversation.</li>
+  </ul>
+  <div class="question-container top-question">
+    <div class="q-bkgrd">
+      <a class="question">Can I find this on another platform?</a>
+    </div>
+    <div class="answer">
+      <p>There's a <a target="_blank" href="https://audio-tools.herokuapp.com">website</a> and an Android app! They're basically identical.</p>
+    </div>
+  </div>
+  <div class="question-container">
+    <div class="q-bkgrd">
+      <a class="question">Am I being recorded?</a>
+    </div>
+    <div class="answer">
+      <p>Nothing in the code lets me record what you say or what the transcription is. The original source code is right <a href="https://github.com/aop4/audio_tools">here</a>. The only third party is Google, since the audio is sent to its servers for processing.</p>
+    </div>
+  </div>
+  <div class="question-container">
+    <div class="q-bkgrd">
+      <a class="question">This isn't working on my device. What's up?</a>
+    </div>
+    <div class="answer">
+      <p>You have to be on an Android device with Google Chrome or on a desktop computer using Google Chrome. It won't work on Apple phones.</p>
+    </div>
+  </div>
+  <div class="question-container">
+    <div class="q-bkgrd">
+      <a class="question">Are there any limitations on how much I can use this?</a>
+    </div>
+    <div class="answer">
+      <p>On an Android device, there should be no limit. On a desktop computer, there's a limit enforced by Google.</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="static/js/about.js"></script>
+{% endblock %}

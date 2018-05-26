@@ -1,8 +1,8 @@
 /*
 To give credit where it may be due, the basic idea for this interface was
 derived from here: https://www.google.com/intl/en/chrome/demos/speech.html
-However, none of the code is copied verbatim, and various bugs produced by
-that code are fixed here. Unlike the demo, this version will work properly
+However, none of the code is copied verbatim, and various bugs from that demo
+are fixed here. Unlike the demo, this version will work properly
 on an Android device, allow the user to capture audio for pretty much 
 unlimited amounts of time (i.e., stop when they want to instead of at arbitrary
 times), not stall when an interim speech recognition result can't be finalized,
