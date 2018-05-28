@@ -174,6 +174,7 @@ $(document).on('ready', function() {
 				        transcript += text;
 				        prevResult = text;
 				}
+				processVoiceCommand(text, ear);
 			}
 			//if the result is not marked as final or has a 0 confidence
 			//value (i.e., is an interim result on Android devices)
@@ -192,7 +193,6 @@ $(document).on('ready', function() {
 			pauseTimeout = setTimeout(restart, 2000, ear, true);
 		}
 		updateTranscripts(interimTranscript, transcript, ear, true);
-		processVoiceCommand(transcript, ear);
 		ear.ignoreNextFinalResult = false;
 	};
 
