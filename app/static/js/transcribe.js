@@ -115,6 +115,17 @@ var SPEECH_API_LANGUAGES = {
 	'ภาษาไทย':         'th-TH'
 };
 
+var VOICE_COMMANDS = {
+	'clear the screen':clearScreen,
+	'zoom in':increaseFontSize,
+	'zoom out':decreaseFontSize,
+	'drop the mic':turnOffMic,
+	'random background color':randomBackgroundColor,
+	'what is the meaning of life':meaningOfLife,
+};
+
+var FONT_SIZE_CHANGE = 4; //the value (in px) by which user can increment/decrement font size
+
 var MICROPHONE_MAX_SESSION_LENGTH = 1800000; //30 minutes in msec. Represents
 	//the maximum amount of time a session will continue w/o user intervention
 var listeningForSpeech = true;
@@ -130,12 +141,12 @@ $(document).on('ready', function() {
 	dropdown.on('change', function() {
 		updateDialect(ear);
 	});
-	var continuityTimeout; // restarts the speech recognition tool periodically,
-	// making longer vocalizations be transcribed more fully
-	var pauseTimeout; // after the user pauses for a couple seconds and no final results are found,
-		// prevents the API from stalling by making the last result appear to be final
-	var micTimeout = setMicTimeout(); // shuts off the mic after a long time (~30 min)
-	var prevResult = ''; // the text of the previous speech transcript
+	var continuityTimeout; //restarts the speech recognition tool periodically,
+	//making longer vocalizations be transcribed more fully
+	var pauseTimeout; //after the user pauses for a couple seconds and no final results are found,
+		//prevents the API from stalling by making the last result appear to be final
+	var micTimeout = setMicTimeout(); //shuts off the mic after a long time (~30 min)
+	var prevResult = ''; //the text of the previous speech transcript
 
 	ear.onresult = function(e) {
 		clearTimeout(continuityTimeout);
@@ -180,18 +191,19 @@ $(document).on('ready', function() {
 			//to be ignored, because it's derived from this vocalization.
 			pauseTimeout = setTimeout(restart, 2000, ear, true);
 		}
-		updateTranscripts(interimTranscript, transcript, ear);
+		updateTranscripts(interimTranscript, transcript, ear, true);
+		processVoiceCommand(transcript, ear);
 		ear.ignoreNextFinalResult = false;
 	};
 
 	ear.onerror = function(e) {
+
 	};
 
 	/*don't allow premature halting of the API; make it keep going
 	unless the user has hit the off button or MICROPHONE_MAX_SESSION_LENGTH
 	milliseconds have passed.*/
 	ear.onend = function(e) {
-		console.log("end");
 		ear.stop(); //if stop() isn't called, start() throws an error
 		if (listeningForSpeech) {
 			ear.start(); //if start() isn't called, the API will stop running
@@ -238,6 +250,10 @@ opposed to a webkitSpeechRecognition object, so Firefox will not be sufficient e
 */
 function checkBrowser() {
 	if (! window.webkitSpeechRecognition) {
+		//eliminate any visual feedback that the mic is on
+		$('#on-button-parent').show();
+		$('#off-button').hide();
+		$('#mic-status').text("Couldn't connect");
 		alert("Please use an updated version of Google Chrome or Chromium. The version for iPhones/iPads"+
 			" unfortunately doesn't have the needed software installed.");
 		throw new Error('Browser is incompatible with Web Speech API. You must use Chrome/Chromium.');
@@ -247,6 +263,9 @@ function checkBrowser() {
 /*Return a version of s with the first letter capitalized, handling
 the only possible edge case here, where s starts with a space.*/
 function capFirstLetter(s) {
+	if (!s) {
+		return s;
+	}
 	var start = 0;
 	if (s.charAt(0) == ' ') {
 		start = 1;
@@ -266,7 +285,7 @@ final transcript to maintain continuity in what the user is seeing. */
 function restart(ear, ignoreNextFinalResult) {
 	console.log(ignoreNextFinalResult);
 	//store the interim transcript as a final transcript (i.e., freeze it) if it exists
-	updateTranscripts('', $('#interim-transcript').text(), ear);
+	updateTranscripts('', $('#interim-transcript').text(), ear, true);
 	//if the API is stalled on an interim result, the next final result
 	//will just be that interim result
 	ear.ignoreNextFinalResult = ignoreNextFinalResult;
@@ -288,7 +307,7 @@ function updateDialect(ear) {
 }
 
 /*Log the results of speech recognition for the user.*/
-function updateTranscripts(interimTranscript, transcript, ear) {
+function updateTranscripts(interimTranscript, transcript, ear, plainText) {
 	//if we're ignoring the next final result and this is a final result,
 	//then don't log it
 	if (ear.ignoreNextFinalResult && transcript) {
@@ -299,8 +318,11 @@ function updateTranscripts(interimTranscript, transcript, ear) {
 	$('#interim-transcript').text(interimTranscript);
 	//update the final transcript if applicable
 	var linebreak = transcript ? '<br>' : '';
+	if (plainText) {
+		transcript = capFirstLetter(transcript);
+	}
 	if (transcript) {
-		$('#transcript').html(prevTranscript + capFirstLetter(transcript) + linebreak);
+		$('#transcript').html(prevTranscript + transcript + linebreak);
 	}
 	scrollDownIfNeeded($('.transcript-container')[0]);
 }
@@ -317,4 +339,74 @@ function setMicTimeout() {
 			$('#off-button').click();
 		}
 	}, MICROPHONE_MAX_SESSION_LENGTH);
+}
+
+/* Receives a potential voice command via the cmd string.
+If the command is valid, the corresponding function is executed.
+If not, nothing occurs. */
+function processVoiceCommand(cmd, ear) {
+	var command = cmd.toLowerCase();
+	commandFunction = VOICE_COMMANDS[command];
+	//if a function is defined for this command, then
+	//execute it
+	if (commandFunction === meaningOfLife) {
+		commandFunction(ear);
+	}
+	else if (commandFunction) {
+		commandFunction();
+	}
+}
+
+function increaseFontSize() {
+	//add 4px to the font size for the transcription
+	changeTranscriptFontSize(FONT_SIZE_CHANGE);
+}
+
+function decreaseFontSize() {
+	//subtract 4px from the font size for the transcription
+	changeTranscriptFontSize(-1 * FONT_SIZE_CHANGE);
+}
+
+/* Adds change pixels to the font size in the transcript container.
+If change is negative, this causes a reduction in the font size.
+If the new font size would be 0 or lower, the operation is not
+allowed. */
+function changeTranscriptFontSize(change) {
+	var sizeString = $('.transcript-container').css('font-size');
+	var size = parseInt(sizeString.slice(0, sizeString.indexOf('px')));
+	var newFontSize = size + change;
+	if (newFontSize > 0) {
+		$('.transcript-container').css('font-size', newFontSize);
+	}
+}
+
+/* Clear the text in the transcript box */
+function clearScreen() {
+	$('#transcript').html('');
+	$('#interim-transcript').html('');
+}
+
+/* Turn off the microphone */
+function turnOffMic() {
+	$('#off-button').click();
+}
+
+/* Changes the background to a randomly chosen color */
+function randomBackgroundColor() {
+	var red = generateRandomColorVal();
+	var blue = generateRandomColorVal();
+	var green = generateRandomColorVal();
+	var comma = ', ';
+	var colorString = 'rgb('+red+comma+blue+comma+green+')';
+	$('body').css('background-color', colorString);
+}
+
+/* Returns a random number in the range 0-255 */
+function generateRandomColorVal() {
+	return Math.floor(Math.random()*255);
+}
+
+/* Shows the user the meaning of life. */
+function meaningOfLife(ear) {
+	updateTranscripts('', '<i class="fas fa-spinner rotate"></i>&#32;Finding meaning', ear, false);
 }

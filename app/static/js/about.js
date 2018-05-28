@@ -1,20 +1,14 @@
 $(document).ready(function() {
 	$('.q-bkgrd').on('click', function(e) {
 		var container = $(this).closest('.question-container');
-		var answer = $(this).closest('.question-container').find('.answer');
+		var answer = container.find('.answer');
+		changeArrowDirection(container);
 		if (answer.css('display') === 'none') {
 			answer.slideDown(function() {
-				//slideDown callback
-				var nextQ = container.next('.question-container');
-				if (nextQ.length) {
-					//scroll down to show answer
-					$('html,body').animate({
-				   		scrollTop: nextQ.offset().top
-					});
-				}
-				else {
-					window.scrollTo(0, document.body.scrollHeight);
-				}
+				// slideDown callback
+				$('html,body').animate({
+			   		scrollTop: container.offset().top
+				});
 			});
 		}
 		else {
@@ -22,3 +16,16 @@ $(document).ready(function() {
 		}
 	});
 });
+
+function changeArrowDirection(container) {
+	var downArrow = container.find('.down-arrow');
+	var upArrow = container.find('.up-arrow');
+	if (downArrow.css('display') === 'none') {
+		upArrow.hide();
+		downArrow.show();
+	}
+	else {
+		upArrow.show();
+		downArrow.hide();
+	}
+}

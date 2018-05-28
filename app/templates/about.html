@@ -17,9 +17,10 @@
     <hr>
     <li class="list-group-item"><i class="far fa-comments fa-4x green-icon"></i><br>It's designed specifically to help the hard of hearing understand what's going on in a conversation.</li>
   </ul>
+
   <div class="question-container top-question">
     <div class="q-bkgrd">
-      <a class="question">Can I find this on another platform?</a>
+      <a class="question">{% include 'arrow-icons.html' %}Can I find this on another platform?</a>
     </div>
     <div class="answer">
       <p>There's a <a target="_blank" href="https://audio-tools.herokuapp.com">website</a> and an Android app! They're basically identical.</p>
@@ -27,7 +28,7 @@
   </div>
   <div class="question-container">
     <div class="q-bkgrd">
-      <a class="question">Am I being recorded?</a>
+      <a class="question">{% include 'arrow-icons.html' %}Am I being recorded?</a>
     </div>
     <div class="answer">
       <p>Nothing in the code lets me record what you say or what the transcription is. The original source code is right <a href="https://github.com/aop4/audio_tools">here</a>. The only third party is Google, since the audio is sent to its servers for processing.</p>
@@ -35,7 +36,7 @@
   </div>
   <div class="question-container">
     <div class="q-bkgrd">
-      <a class="question">This isn't working on my device. What's up?</a>
+      <a class="question">{% include 'arrow-icons.html' %}This isn't working on my device. What's up?</a>
     </div>
     <div class="answer">
       <p>You have to be on an Android device with Google Chrome or on a desktop computer using Google Chrome. It won't work on Apple phones.</p>
@@ -43,7 +44,7 @@
   </div>
   <div class="question-container">
     <div class="q-bkgrd">
-      <a class="question">Are there any limitations on how much I can use this?</a>
+      <a class="question">{% include 'arrow-icons.html' %}Are there any limitations on how much I can use this?</a>
     </div>
     <div class="answer">
       <p>On an Android device, there should be no limit. On a desktop computer, there's a limit enforced by Google.</p>

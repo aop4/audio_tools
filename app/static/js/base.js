@@ -13,4 +13,12 @@ $(document).ready(function() {
 	};
 
 	$('#slide').sliiide(settings); //initialize sliiide
+	//hide the hamburger icon when it's clicked
+	$(settings.toggle).click(function(e) {
+		$(this).hide();
+	});
+	//show the hamburger icon when the exit button in the nav menu is clicked
+	$(settings.exit_selector).click(function(e) {
+		$(settings.toggle).show();
+	});
 });
