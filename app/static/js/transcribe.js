@@ -117,8 +117,8 @@ var SPEECH_API_LANGUAGES = {
 
 var VOICE_COMMANDS = {
 	'clear the screen':clearScreen,
-	'zoom in':increaseFontSize,
-	'zoom out':decreaseFontSize,
+	'larger':increaseFontSize,
+	'smaller':decreaseFontSize,
 	'drop the mic':turnOffMic,
 	'random background':randomBackgroundColor,
 	'original background':revertBackgroundColor,
