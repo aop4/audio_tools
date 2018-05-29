@@ -120,7 +120,7 @@ var VOICE_COMMANDS = {
 	'zoom in':increaseFontSize,
 	'zoom out':decreaseFontSize,
 	'drop the mic':turnOffMic,
-	'random background color':randomBackgroundColor,
+	'random background':randomBackgroundColor,
 	'original background':revertBackgroundColor,
 	'what is the meaning of life':meaningOfLife,
 };
