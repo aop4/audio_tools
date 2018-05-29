@@ -147,6 +147,7 @@ $(document).on('ready', function() {
 		//prevents the API from stalling by making the last result appear to be final
 	var micTimeout = setMicTimeout(); //shuts off the mic after a long time (~30 min)
 	var prevResult = ''; //the text of the previous speech transcript
+	var prevResultTimestamp;
 
 	ear.onresult = function(e) {
 		clearTimeout(continuityTimeout);
@@ -168,13 +169,17 @@ $(document).on('ready', function() {
 			//It's a bug in the API. But their confidence value is 0,
 			//so we can catch final results, whose confidence value > 0
 			if (result.isFinal && result[0].confidence > 0) {
+				var date = new Date();
+				var currTimestamp = date.getTime();
 				//handle other bug on Android phones where the same transcript
 				//can be returned multiple times
-				if (text !== prevResult) {
-				        transcript += text;
-				        prevResult = text;
+				if (text !== prevResult || (currTimestamp - prevResultTimestamp) >= 500) {
+			        if (! processVoiceCommand(text, ear)) {
+			        	transcript += text;
+			        }
+			        prevResult = text;
+			        prevResultTimestamp = currTimestamp;
 				}
-				processVoiceCommand(text, ear);
 			}
 			//if the result is not marked as final or has a 0 confidence
 			//value (i.e., is an interim result on Android devices)
@@ -355,6 +360,7 @@ function processVoiceCommand(cmd, ear) {
 	else if (commandFunction) {
 		commandFunction();
 	}
+	return commandFunction;
 }
 
 function increaseFontSize() {
