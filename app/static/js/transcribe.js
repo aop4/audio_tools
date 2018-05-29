@@ -121,6 +121,7 @@ var VOICE_COMMANDS = {
 	'zoom out':decreaseFontSize,
 	'drop the mic':turnOffMic,
 	'random background color':randomBackgroundColor,
+	'original background':revertBackgroundColor,
 	'what is the meaning of life':meaningOfLife,
 };
 
@@ -405,6 +406,10 @@ function randomBackgroundColor() {
 	var comma = ', ';
 	var colorString = 'rgb('+red+comma+blue+comma+green+')';
 	$('body').css('background-color', colorString);
+}
+
+function revertBackgroundColor() {
+	$('body').css('background-color', '#fff');
 }
 
 /* Returns a random number in the range 0-255 */
