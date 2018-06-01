@@ -323,12 +323,11 @@ function updateTranscripts(interimTranscript, transcript, ear, plainText) {
 	//set/clear the interim transcript
 	$('#interim-transcript').text(interimTranscript);
 	//update the final transcript if applicable
-	var linebreak = transcript ? '<br>' : '';
 	if (plainText) {
 		transcript = capFirstLetter(transcript);
 	}
 	if (transcript) {
-		$('#transcript').html(prevTranscript + transcript + linebreak);
+		$('#transcript').html(prevTranscript + transcript + '<br>');
 	}
 	scrollDownIfNeeded($('.transcript-container')[0]);
 }
