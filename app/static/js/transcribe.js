@@ -260,8 +260,7 @@ $(document).on('ready', function() {
 			$('#on-button-parent').show();
 			$('#off-button').hide();
 			$('#mic-status').text("Couldn't connect");
-			alert("Please use an updated version of Google Chrome or Chromium. The version for iPhones/iPads"+
-				" unfortunately doesn't have the needed software installed.");
+			alert("Please use an updated version of Google Chrome or Chromium on an Android device.");
 			throw new Error('Browser is incompatible with Web Speech API. You must use Chrome/Chromium.');
 		}
 	}
