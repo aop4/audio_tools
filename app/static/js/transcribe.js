@@ -129,7 +129,7 @@ $(document).on('ready', function() {
 	var FONT_SIZE_CHANGE = 4; //the value (in px) by which user can increment/decrement font size
 
 	var MICROPHONE_MAX_SESSION_LENGTH = 1800000; //30 minutes in msec. Represents
-		//the maximum amount of time a session will continue w/o user intervention
+		//the maximum amount of time a session will continue without user intervention
 	var listeningForSpeech = false;
 
 	$('#off-button').hide(); //I made a CSS class display-none, but it requires
@@ -138,7 +138,7 @@ $(document).on('ready', function() {
 	//populate the languages dropdown
 	var dropdown = $('#dialect-chooser');
 	setUpLangDropdown(dropdown);
-	//check if the browser is compatible, and alert user if it isn't
+	//check if the browser is compatible. Alert user and exit script if it isn't
 	checkBrowser();
 	var ear = new webkitSpeechRecognition();
 	setupEar(ear);
@@ -153,6 +153,9 @@ $(document).on('ready', function() {
 	var prevResult = ''; //the text of the previous speech transcript
 	var prevResultTimestamp;
 
+	/**
+	 * This is fired when an interim or final transcription result comes in.
+	 */
 	ear.onresult = function(e) {
 		clearTimeout(continuityTimeout);
 		clearTimeout(pauseTimeout);
@@ -251,10 +254,10 @@ $(document).on('ready', function() {
 
 	/**
 	 * Only Chrome on Android fully supports the Web Speech API. Alerts the user 
-	 * if their browser is not equipped with the right tool and disables the app's UI.
+	 * and disables the app's UI if the user's browser is not equipped with the right tool.
 	 * The Web Speech API doesn't seem to work on Firefox, even with a 
 	 * SpeechRecognition object as opposed to a webkitSpeechRecognition object, 
-	 * so Firefox will not be sufficient either.
+	 * so Firefox will not be sufficient.
 	*/
 	function checkBrowser() {
 		if (!isBrowserCompatible()) {
