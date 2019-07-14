@@ -1,0 +1,16 @@
+runtime: python37
+
+env: standard # currently a default setting
+
+handlers:
+  # Serve static files
+- url: /static
+  static_dir: app/static
+
+- url: /.*
+  script: auto
+
+instance_class: F1 #  currently a default setting
+automatic_scaling:
+  min_instances: 0
+  max_instances: 1
