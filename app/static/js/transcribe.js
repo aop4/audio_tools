@@ -249,20 +249,31 @@ $(document).on('ready', function() {
 		ear.lang = 'en-US';
 	}
 
-	/* Only Chrome fully supports the Web Speech API. Alert the user if their
-	browser is not equipped with the right tool. This API doesn't seem to work 
-	on Firefox (at least on Ubuntu), even with a SpeechRecognition object as 
-	opposed to a webkitSpeechRecognition object, so Firefox will not be sufficient either.
+	/**
+	 * Only Chrome on Android fully supports the Web Speech API. Alerts the user 
+	 * if their browser is not equipped with the right tool and disables the app's UI.
+	 * The Web Speech API doesn't seem to work on Firefox, even with a 
+	 * SpeechRecognition object as opposed to a webkitSpeechRecognition object, 
+	 * so Firefox will not be sufficient either.
 	*/
 	function checkBrowser() {
-		if (! window.webkitSpeechRecognition) {
+		if (!isBrowserCompatible()) {
 			//eliminate any visual feedback that the mic is on
 			$('#on-button-parent').show();
 			$('#off-button').hide();
 			$('#mic-status').text("Couldn't connect");
-			alert("Please use an updated version of Google Chrome or Chromium on an Android device.");
-			throw new Error('Browser is incompatible with Web Speech API. You must use Chrome/Chromium.');
+			alert('Please use an updated version of Google Chrome or Chromium *on an Android device*.');
+			throw new Error('Browser is incompatible with Web Speech API. You must use Chrome/Chromium on Android.');
 		}
+	}
+
+	/**
+	 * Returns true if the user's web browser is compatible with the application.
+	 * It must be on an Android device that's Web Speech API capable.
+	 */
+	function isBrowserCompatible() {
+		return window.webkitSpeechRecognition && window.navigator.userAgent &&
+			window.navigator.userAgent.indexOf('Android') !== -1;
 	}
 
 	/*Return a version of s with the first letter capitalized, handling
